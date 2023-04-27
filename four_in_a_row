@@ -1,0 +1,231 @@
+from IPython.display import clear_output
+
+
+def board():
+    m = '\u00B7'
+
+    b = [
+        ['|', m, m, m, m, m, m, m, '|'],
+        ['|', m, m, m, m, m, m, m, '|'],
+        ['|', m, m, m, m, m, m, m, '|'],
+        ['|', m, m, m, m, m, m, m, '|'],
+        ['|', m, m, m, m, m, m, m, '|'],
+        ['|', m, m, m, m, m, m, m, '|']
+    ]
+
+    for _ in range(6):
+        for i in range(len(b[_])):
+            print(b[_][i], end="")
+        print("")  # this will eliminate the space between rows
+
+    return b
+
+
+def player_move(player):
+    if player != 'player1':
+        player = 'player1'
+    else:
+        player = 'player2'
+
+    while True:
+        move = input(f'{player} : ')
+        if move not in '0123456':
+            print('Invalid move')
+
+        else:
+            if not move.isnumeric():
+                continue
+            else:
+                return player, move
+                break
+
+
+def update_board(player, move):
+    board_game = board()
+
+    while True:
+        move = int(move)
+        clear_output()
+        if player == 'player1':
+            mark = 'O'
+        else:
+            mark = 'X'
+
+        for j in reversed(range(6)):
+            if board_game[j][move + 1] in 'OX':
+                continue
+            else:
+                board_game[j][move + 1] = mark
+                break
+
+        print(' 0123456')
+        print('+-------+')
+        for _ in range(6):
+            for i in range(len(board_game[_])):
+                print(board_game[_][i], end="")
+            print("")
+        print('+-------+')
+
+        if check_winner(board_game) == "Draw":
+            return "Draw"
+            break
+        elif check_winner(board_game):
+            return player
+            break
+        else:
+            player, move = player_move(player)
+            continue
+
+
+def check_winner(b_game):
+    """
+    checking if there are 4 in a row for a specific mark
+    wth combinations:
+    1. row5 : 0123, 1234, 2345, 3456 [5][0], [5][1], [5][2], [5][3]
+    2. row4 : 0123, 1234, 2345, 3456
+    3. row3 : 0123, 1234, 2345, 3456
+    4. row2 : 0123, 1234, 2345, 3456
+    5. row1 : 0123, 1234, 2345, 3456
+    6. row0 : 0123, 1234, 2345, 3456
+    7. diag0D : 0123, 1234, 2345, 3456 [0][0], [1][1], [2][2], [3][3]
+    8. diag1D : 0123, 1234, 2345, 3456
+    9. diag32D : 0123, 1234, 2345, 3456
+    10. diag0U : 6543, 5432, 4321, 3210 [0][6], [1][5], [2][4], [3][3]
+    11. diag1U : 6543, 5432, 4321, 3210
+    12. diag2U : 6543, 5432, 4321, 3210
+    13. col0 : 0000, 1111, 2222, 3333, 4444, 5555, 6666
+    14. col1 : 0000, 1111, 2222, 3333, 4444, 5555, 6666
+    15. col2 : 0000, 1111, 2222, 3333, 4444, 5555, 6666
+    """
+
+    cnt = 0
+    for _ in b_game[0]:
+        for marking in _:
+            if marking == '\u00B7':
+                cnt += 1
+    if cnt == 0:
+        return "Draw"
+    else:
+
+        combi1 = [[0, 1, 2, 3],
+                  [1, 2, 3, 4],
+                  [2, 3, 4, 5],
+                  [3, 4, 5, 6]]
+
+        # row_result
+        for iR in range(6):
+            for cellR in range(len(combi1)):
+                frowR = ''
+                for cR in combi1[cellR]:
+                    if b_game[iR][cR + 1] in 'OX':
+                        frowR += b_game[iR][cR + 1]
+
+                    if frowR == 'OOOO' or frowR == 'XXXX':
+                        row_result = True
+                        break
+                    else:
+                        row_result = False
+                else:
+                    continue
+                break
+            else:
+                continue
+            break
+
+        # column_result
+        for cellC in range(7):
+            frowC = ''
+            for iC in range(6):
+                if b_game[iC][cellC + 1] in 'OX':
+                    frowC += b_game[iC][cellC + 1]
+
+                if frowC == "OOOO" or frowC == 'XXXX':
+                    col_result = True
+                    break
+                else:
+                    col_result = False
+            else:
+                continue
+            break
+
+        # diagonalDown result
+        for iD in range(3):  # iD = 0
+
+            for cellD in range(len(combi1)):  # cellID = 1 combi1 = 1
+                diagD = ''
+                ii = iD  # ii =0
+                for cD in combi1[cellD]:  # cd =  cellID = 0
+                    if b_game[ii][cD + 1] in 'OX':  # ii = 2 cD = 2
+                        diagD += b_game[ii][cD + 1]
+                        ii += 1
+
+                    else:
+                        ii += 1
+
+                if diagD == 'OOOO' or diagD == 'XXXX':
+                    diagD_result = True
+                    break
+                else:
+                    diagD_result = False
+
+            else:
+                continue
+            break
+
+        # diagonalUp result
+        for iU in [5, 4, 3]:
+
+            for cellU in range(len(combi1)):
+                diagU = ''
+                iiU = iU
+                for cU in combi1[cellU]:
+                    if b_game[iiU][cU + 1] in 'OX':
+                        diagU += b_game[iiU][cU + 1]
+                        iiU -= 1
+
+                    if diagU == 'OOOO' or diagU == 'XXXX':
+                        diagU_result = True
+                        break
+                    else:
+                        diagU_result = False
+
+            else:
+                continue
+            break
+
+        if row_result or col_result or diagD_result or diagU_result:
+            return True
+        else:
+            return False
+def print_winner(player):
+    if player == 'Draw':
+        print("This round is a draw.")
+    else:
+        print(f'{player} wins!')
+
+def game():
+    print(' 0123456')
+    print('+-------+')
+    board()
+    print('+-------+')
+    p,m = player_move('start')
+    playerName = update_board(p,m)
+    print_winner(playerName)
+
+def play_more():
+    while True:
+        input_str = input("Play more game? (Y/N): ")
+        if input_str.lower() in 'yn':
+            if input_str.lower() == 'y':
+                    return True
+                    break
+            else:
+                return False
+                break
+        else:
+            continue
+
+while True:
+    game()
+    if not play_more():
+        break
